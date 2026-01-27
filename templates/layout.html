@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Araç Kiralama Sistemi{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- GENEL TEMA (SABİT KOYU MOD) --- */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+        .footer { margin-top: auto; }
+
+        /* --- PRELOADER --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #ffffff; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .loader-wheel {
+            width: 120px; height: 120px;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/1553/1553979.png'); 
+            background-size: cover;
+            animation: spin 0.6s linear infinite;
+            filter: drop-shadow(0px 10px 10px rgba(0,0,0,0.3));
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text {
+            margin-top: 15px; font-family: 'Arial Black', sans-serif; font-size: 1.5rem;
+            color: #212529; text-transform: uppercase; letter-spacing: 2px;
+        }
+        .loader-text span { color: #ffc107; }
+
+        /* --- NAVBAR --- */
+        .navbar-custom {
+            background: rgba(33, 37, 41, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #ffc107;
+            padding: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand {
+            font-weight: 800; font-size: 1.5rem; letter-spacing: 1px;
+            color: #fff !important; text-transform: uppercase;
+        }
+        .navbar-brand i {
+            color: #ffc107; text-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+
+        .nav-link {
+            font-weight: 600; color: #e0e0e0 !important; margin: 0 10px;
+            position: relative; transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active { color: #ffc107 !important; }
+        
+        .nav-link:not(.user-profile-btn)::after {
+            content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0;
+            background-color: #ffc107; transition: width 0.3s;
+        }
+        .nav-link:not(.user-profile-btn):hover::after { width: 100%; }
+
+        /* --- PROFİL BUTONU --- */
+        .user-profile-btn {
+            background-color: #212529;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative; overflow: hidden; transition: all 0.3s ease;
+        }
+        .user-profile-btn:hover {
+            border-color: rgba(255, 193, 7, 0.5); color: #fff !important;
+        }
+        .user-profile-btn::before {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 3px;
+            background-color: #ffc107; transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 1;
+        }
+        .user-profile-btn:hover::before { width: 100%; }
+
+        /* --- DROPDOWN MENÜLER --- */
+        .dropdown-menu-dark-custom {
+            background-color: #2c2c2c; border: 1px solid #ffc107; margin-top: 10px;
+        }
+        .dropdown-item { color: #fff; transition: 0.2s; }
+        .dropdown-item:hover { background-color: #ffc107; color: #000; padding-left: 1.5rem; }
+        
+        /* --- KART EFEKTLERİ --- */
+        .card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+            border-color: #ffc107 !important;
+            z-index: 10;
+        }
+
+        .btn-auth { border-radius: 50px; padding: 8px 25px; font-weight: 700; transition: transform 0.2s; }
+        .btn-auth:hover { transform: scale(1.05); }
+
+        /* CHATBOT */
+        .chat-btn {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background-color: #ffc107; color: #000; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); cursor: pointer; z-index: 1000;
+            transition: transform 0.3s ease; animation: bounce 2s infinite;
+        }
+        .chat-btn:hover { transform: scale(1.1); }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+
+        .chat-box {
+            position: fixed; bottom: 100px; right: 30px; width: 350px;
+            background: #fff; border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            display: none; flex-direction: column; overflow: hidden; z-index: 1000;
+            border: 2px solid #ffc107;
+        }
+        .chat-header {
+            background-color: #212529; color: #fff; padding: 15px; font-weight: bold;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 3px solid #ffc107;
+        }
+        .chat-body {
+            height: 300px; padding: 15px; overflow-y: auto; background-color: #f9f9f9;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .chat-message { max-width: 80%; padding: 10px; border-radius: 10px; font-size: 0.9rem; }
+        .bot-msg { background-color: #e9ecef; align-self: flex-start; color: #333; border-bottom-left-radius: 0; }
+        .user-msg { background-color: #ffc107; align-self: flex-end; color: #000; border-bottom-right-radius: 0; font-weight: 600; }
+        .chat-input-area { padding: 10px; background: #fff; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        .chat-input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 20px; outline: none; }
+
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <div class="loader-wheel"></div>
+        <div class="loader-text">Yükleniyor<span>...</span></div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top navbar-custom shadow">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-car-side me-2"></i>Rent-A-Car
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">ANASAYFA</a>
+                    </li>
+
+                    {% if session.get('user_id') %}
+                        
+                        {% if session.get('role') == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link text-warning" href="{{ url_for('admin_dashboard') }}">
+                                    <i class="fas fa-chart-line me-1"></i>YÖNETİM
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center rounded-pill px-3 py-1 text-decoration-none user-profile-btn" 
+                               href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white !important;">
+                                
+                                <img src="{{ url_for('static', filename='img/profiles/' + session.get('user_img', 'default_user.png')) }}" 
+                                     alt="Profil" class="rounded-circle border border-warning me-2" 
+                                     style="width: 32px; height: 32px; object-fit: cover;">
+                                
+                                <span class="small fw-bold text-uppercase">
+                                    {{ session.get('user_name', session.get('ad', 'HESABIM')) }}
+                                </span>
+                            </a>
+                            
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom shadow" aria-labelledby="navbarDropdown">
+                                {% if session.get('role') == 'musteri' %}
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('profil') }}">
+                                            <i class="fas fa-id-card me-2"></i>Profilim
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('favorilerim') }}">
+                                            <i class="fas fa-heart me-2"></i>Favorilerim
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for('kiralamalarim') }}">
+                                            <i class="fas fa-key me-2"></i>Kiralamalarım
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider bg-secondary"></li>
+                                {% endif %}
+                                
+                                <li>
+                                    <a class="dropdown-item text-danger fw-bold" href="{{ url_for('logout') }}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                    {% else %}
+                        <li class="nav-item ms-2">
+                            <a class="nav-link" href="{{ url_for('login') }}">GİRİŞ YAP</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-warning text-dark btn-auth shadow-sm" href="{{ url_for('register') }}">
+                                KAYIT OL <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        {% block body %}{% endblock %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="bg-dark text-white text-center py-4 footer">
+        <div class="container">
+            <h5 class="fw-bold text-warning mb-3" style="letter-spacing: 2px;">RENT-A-CAR</h5>
+            <p class="small text-white-50">Güvenli, hızlı ve ekonomik araç kiralamanın tek adresi.</p>
+            <div class="mb-3">
+                <a href="#" class="text-white mx-2 hover-warning"><i class="fab fa-facebook fa-lg"></i></a>
+                <a href="#" class="text-white mx-2 hover-warning"><i class="fab fa-instagram fa-lg"></i></a>
+                <a href="#" class="text-white mx-2 hover-warning"><i class="fab fa-twitter fa-lg"></i></a>
+            </div>
+            <small class="text-muted">&copy; 2025 Araç Kiralama Sistemi</small>
+            
+            <div class="mt-3 border-top border-secondary pt-2 w-50 mx-auto">
+                <a href="{{ url_for('admin_login') }}" class="text-decoration-none text-secondary" style="font-size: 11px; opacity: 0.5;">
+                    <i class="fas fa-user-lock me-1"></i> Personel Girişi
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="chat-btn" onclick="toggleChat()">
+        <i class="fas fa-comment-dots fa-2x"></i>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            <span><i class="fas fa-robot me-2"></i>Canlı Destek</span>
+            <button onclick="toggleChat()" class="btn btn-sm btn-close btn-close-white"></button>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message bot-msg">Merhaba! 👋 Size nasıl yardımcı olabilirim?</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="userMsg" class="chat-input" placeholder="Bir şeyler yazın..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()" class="btn btn-dark rounded-circle"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Preloader
+        window.addEventListener("load", function () {
+            var loader = document.getElementById("preloader");
+            if(loader) {
+                loader.style.opacity = "0";
+                setTimeout(function(){ loader.style.display = "none"; }, 500);
+            }
+        });
+        
+        // Form Submit Animasyonu
+        document.addEventListener('submit', function(e) {
+            if(e.target.tagName === 'FORM') {
+                var loader = document.getElementById("preloader");
+                if(loader) {
+                    loader.style.display = "flex"; 
+                    setTimeout(() => { loader.style.opacity = "1"; }, 10);
+                }
+            }
+        });
+
+        // Chatbot
+        function toggleChat() {
+            const box = document.getElementById('chatBox');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userMsg');
+            const msg = input.value.trim().toLowerCase();
+            const chatBody = document.getElementById('chatBody');
+
+            if (msg === "") return;
+
+            chatBody.innerHTML += `<div class="chat-message user-msg">${input.value}</div>`;
+            input.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            setTimeout(() => {
+                let reply = "Maalesef bunu anlayamadım. Lütfen 'fiyat', 'iletişim' veya 'araçlar' yazın.";
+                
+                if (msg.includes('merhaba') || msg.includes('selam')) reply = "Merhabalar! Hoş geldiniz. 🚗";
+                else if (msg.includes('fiyat') || msg.includes('ücret')) reply = "Araç fiyatlarımız modele göre günlük 800₺ ile 4500₺ arasında değişmektedir.";
+                else if (msg.includes('araç') || msg.includes('araba')) reply = "Ekonomik, SUV ve Lüks segmentte geniş bir filomuz var. Ana sayfadan inceleyebilirsiniz.";
+                else if (msg.includes('iletişim') || msg.includes('yer') || msg.includes('adres')) reply = "Ofisimiz İstanbul Maslak'tadır. Tel: 0850 123 45 67";
+                else if (msg.includes('indirim') || msg.includes('kampanya')) reply = "Şu an 'YAZ2025' kodu ile %15 indirim kazanabilirsiniz! 🎁";
+
+                chatBody.innerHTML += `<div class="chat-message bot-msg">${reply}</div>`;
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 600);
+        }
+
+        // SweetAlert
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    var iconType = 'info'; 
+                    if ("{{ category }}" == "success") iconType = 'success';
+                    else if ("{{ category }}" == "danger") iconType = 'error';
+                    else if ("{{ category }}" == "warning") iconType = 'warning';
+
+                    Swal.fire({
+                        title: "{{ message }}",
+                        icon: iconType,
+                        confirmButtonText: 'Tamam',
+                        confirmButtonColor: '#ffc107',
+                        background: '#212529',
+                        color: '#fff',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>
