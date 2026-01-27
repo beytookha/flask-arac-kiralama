@@ -10,7 +10,7 @@ Proje şu an çalışır durumda, temel fonksiyonlar (Rezervasyon, Admin, Müşt
 ## 📅 Git Commit Planı
 
 ### 🟢 Başlangıç (Current State)
-- [ ] **Commit 001: Initial MVP Release**
+- [x] **Commit 001: Initial MVP Release**
     *   **Mesaj Başlığı:** `feat: Initial MVP release of Car Rental System`
     *   **Detay:**
         *   Core Flask application structure (app.py)
@@ -20,7 +20,7 @@ Proje şu an çalışır durumda, temel fonksiyonlar (Rezervasyon, Admin, Müşt
         *   Static assets (CSS, JS, Images)
     *   **Komut:** `git add .` -> `git commit -m "..."`
 
-- [ ] **Commit 002: Project Documentation**
+- [x] **Commit 002: Project Documentation**
     *   **Mesaj Başlığı:** `docs: Add project analysis and roadmap`
     *   **Detay:**
         *   Added `project_analysis.md` for refactoring strategy.
