@@ -13,11 +13,11 @@ db_pool = mysql.connector.pooling.MySQLConnectionPool(
     pool_name="mypool",
     pool_size=5,
     pool_reset_session=True,
-    host=os.environ.get('DB_HOST', 'localhost'),
+    host=os.environ.get('DB_HOST', '127.0.0.1'),
     database=os.environ.get('DB_NAME'),
     user=os.environ.get('DB_USER'),
     password=os.environ.get('DB_PASSWORD'),
-    unix_socket='/Applications/XAMPP/xamppfiles/var/mysql/mysql.sock'
+    port=3306 
 )
 
 def get_db_connection():
