@@ -36,9 +36,6 @@ app.register_blueprint(admin_bp)
 app.register_blueprint(api_bp)
 
 # --- YARDIMCI: MAIL GÖNDERME ---
-# (Bu fonksiyon artık auth.py içinde, ancak app.py'de de kullanılıyor olabilir. 
-# Eğer app.py'de hala mail atan yerler varsa kalmalı veya shared bir yere taşınmalı.
-# Şimdilik burada kalsın ama send_eamil auth.py'de de var. Kod tekrarı oldu ama Refactor sonra yapacağız.)
 def send_email(to, subject, template):
     try:
         msg = Message(subject, recipients=[to], html=template)

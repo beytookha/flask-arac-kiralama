@@ -219,20 +219,170 @@ def sozlesme_indir(rezervasyon_id):
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # 1. BAŞLIK
-    pdf.set_font("Arial", 'B', 20)
+    # --- 1. BAŞLIK VE LOGO ---
+    pdf.set_font("Arial", 'B', 24)
     pdf.set_text_color(33, 37, 41)
-    pdf.cell(0, 10, txt=tr("ARAÇ KİRALAMA SÖZLEŞMESİ"), ln=True, align='C')
+    pdf.cell(0, 15, txt=tr("RENT A CAR"), ln=True, align='C')
     
-    pdf.set_font("Arial", '', 10)
+    pdf.set_font("Arial", '', 12)
     pdf.set_text_color(100, 100, 100)
-    tarih_str = datetime.now().strftime('%d.%m.%Y %H:%M')
-    pdf.cell(0, 5, txt=tr(f"Sözleşme No: #RZ-{data['rezervasyon_id']}  |  Düzenlenme Tarihi: {tarih_str}"), ln=True, align='C')
-    pdf.ln(5)
-
-    # ... (PDF kodunun devamı kısa tutuldu, aynı mantık) ...
-    # Tam kod app.py'den alınmıştır ancak özet geçiyorum
+    pdf.cell(0, 8, txt=tr("ARAÇ KİRALAMA SÖZLEŞMESİ"), ln=True, align='C')
     
+    tarih_str = datetime.now().strftime('%d.%m.%Y')
+    pdf.cell(0, 8, txt=tr(f"Sözleşme No: #RZ-{data['rezervasyon_id']}  |  Tarih: {tarih_str}"), ln=True, align='C')
+    
+    pdf.ln(8)
+
+    # --- 2. TARAFLAR (Müşteri ve Şirket) ---
+    pdf.set_fill_color(230, 230, 230)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, txt=tr("1. TARAFLAR VE BİLGİLER"), ln=True, fill=True)
+    pdf.ln(4)
+
+    pdf.set_font("Arial", '', 10)
+    
+    # Sol Sütun ve Sağ Sütun Ayarları
+    y_before_parties = pdf.get_y()
+    
+    # SOL SÜTUN (KİRACI)
+    pdf.set_font("Arial", 'B', 10)
+    pdf.cell(95, 6, txt=tr("KİRACI (MÜŞTERİ)"), ln=True)
+    pdf.set_font("Arial", '', 9)
+    pdf.cell(95, 5, txt=tr(f"Ad Soyad: {data['ad']} {data['soyad']}"), ln=True)
+    pdf.cell(95, 5, txt=tr(f"TC/Pasaport: {data.get('tc_no', '-------')}"), ln=True)
+    pdf.cell(95, 5, txt=tr(f"Telefon: {data['telefon']}"), ln=True)
+    pdf.cell(95, 5, txt=tr(f"E-Posta: {data['eposta']}"), ln=True)
+    pdf.multi_cell(90, 5, txt=tr(f"Adres: {data['adres']}"))
+    
+    y_after_left = pdf.get_y()
+
+    # SAĞ SÜTUN (KİRALAYAN) - En başa dön, sağa kay
+    pdf.set_xy(110, y_before_parties)
+    pdf.set_font("Arial", 'B', 10)
+    pdf.cell(90, 6, txt=tr("KİRALAYAN (FİRMA)"), ln=True)
+    pdf.set_font("Arial", '', 9)
+    # Sağ sütun hücrelerinde x'i manuel set etmemiz lazım çünkü ln=True solu sıfırlar
+    
+    def right_col(text):
+        pdf.set_x(110)
+        pdf.cell(90, 5, txt=tr(text), ln=True)
+
+    right_col("Firma Adı: RENT A CAR OTO. A.Ş.")
+    right_col("Vergi No: 1234567890")
+    right_col("Telefon: +90 850 123 45 67")
+    right_col("Adres: İstanbul, Türkiye")
+
+    # İki sütundan hangisi daha aşağıda bittiyse oraya git
+    y_after_right = pdf.get_y()
+    pdf.set_y(max(y_after_left, y_after_right) + 5)
+
+    # --- 3. ARAÇ BİLGİLERİ ---
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, txt=tr("2. KİRALANAN ARAÇ BİLGİLERİ"), ln=True, fill=True)
+    pdf.ln(2)
+
+    pdf.set_font("Arial", 'B', 9)
+    # Tablo Genişlikleri (Toplam ~190 olmalı)
+    w_marka = 50
+    w_plaka = 35
+    w_yil = 25
+    w_yakit = 35
+    w_sigorta = 45
+
+    pdf.cell(w_marka, 8, txt=tr("Marka / Model"), border=1)
+    pdf.cell(w_plaka, 8, txt=tr("Plaka"), border=1)
+    pdf.cell(w_yil, 8, txt=tr("Yıl"), border=1)
+    pdf.cell(w_yakit, 8, txt=tr("Yakıt / Vites"), border=1)
+    pdf.cell(w_sigorta, 8, txt=tr("Sigorta / Poliçe"), border=1, ln=True)
+
+    pdf.set_font("Arial", '', 9)
+    pdf.cell(w_marka, 8, txt=tr(f"{data['marka']} {data['model']}"), border=1)
+    pdf.cell(w_plaka, 8, txt=tr(f"{data['plaka']}"), border=1)
+    pdf.cell(w_yil, 8, txt=tr(f"{data['yil']}"), border=1)
+    pdf.cell(w_yakit, 8, txt=tr(f"{data['yakit_turu']}"), border=1)
+    pdf.cell(w_sigorta, 8, txt=tr(f"{data.get('sigorta_sirketi', '-')} / {data.get('police_no', '-')}"), border=1, ln=True)
+    
+    pdf.ln(8)
+
+    # --- 4. KİRALAMA DETAYLARI VE ÜCRET ---
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, txt=tr("3. KİRALAMA VE ÖDEME DETAYLARI"), ln=True, fill=True)
+    pdf.ln(2)
+
+    pdf.set_font("Arial", '', 9)
+    
+    # 3 Hücreli Bilgi
+    pdf.cell(63, 8, txt=tr(f"Alış Tarihi: {data['baslangic_tarihi']}"), border=1)
+    pdf.cell(63, 8, txt=tr(f"İade Tarihi: {data['bitis_tarihi']}"), border=1)
+    
+    d1 = datetime.strptime(str(data['baslangic_tarihi']), "%Y-%m-%d")
+    d2 = datetime.strptime(str(data['bitis_tarihi']), "%Y-%m-%d")
+    gun = (d2 - d1).days
+    pdf.cell(64, 8, txt=tr(f"Toplam Süre: {gun} Gün"), border=1, ln=True)
+    
+    pdf.ln(2)
+    pdf.set_font("Arial", 'B', 9)
+    pdf.cell(190, 8, txt=tr("EKSTRA HİZMETLER:"), ln=True, border='B')
+    
+    pdf.set_font("Arial", '', 9)
+    if data.get('ekstralar'):
+        ekstra_str = ", ".join([f"{e['ad']} ({e['gunluk_ucret']} TL)" for e in data['ekstralar']])
+        pdf.multi_cell(190, 6, txt=tr(ekstra_str))
+    else:
+        pdf.cell(190, 6, txt=tr("Ekstra hizmet alınmamıştır."), ln=True)
+
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 12)
+    if data.get('indirim_kodu'):
+        pdf.cell(0, 10, txt=tr(f"TOPLAM TUTAR: {data['toplam_ucret']} TL (İndirim Kodu: {data['indirim_kodu']})"), ln=True, align='R')
+    else:
+        pdf.cell(0, 10, txt=tr(f"TOPLAM TUTAR: {data['toplam_ucret']} TL"), ln=True, align='R')
+    
+    pdf.ln(10)
+
+    # --- 5. ŞARTLAR VE İMZA ---
+    if pdf.get_y() > 220: pdf.add_page() # Sayfa sonunda yer kalmadıysa yeni sayfa
+
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(0, 10, txt=tr("4. GENEL ŞARTLAR VE İMZA"), ln=True, fill=True)
+    pdf.ln(2)
+    
+    pdf.set_font("Arial", '', 8)
+    sartlar = (
+        "1. Kiracı, aracı karayolları trafik kanununa uygun olarak özenle kullanmayı kabul eder.\n"
+        "2. Aracın kira süresi içinde karışacağı her türlü kaza, hasar ve trafik cezalarından kiracı sorumludur.\n"
+        "3. Araç, sözleşmede belirtilen tarihte ve saatte, yakıt seviyesi aynı şekilde teslim edilmelidir.\n"
+        "4. Kiralayan, aracın teknik bakımlarını eksiksiz yaptığını beyan eder.\n"
+        "5. İşbu sözleşme ihtilaf vukuunda İstanbul Mahkemeleri ve İcra Daireleri yetkilidir.\n"
+        "6. Kiracı, aracı üçüncü şahıslara kullandıramaz, devredemez.\n"
+        "7. Geç teslimlerde her saat için günlük kira bedelinin 1/3'ü kadar ceza uygulanır."
+    )
+    pdf.multi_cell(0, 5, txt=tr(sartlar))
+    
+    pdf.ln(15)
+    
+    # İmzalar
+    y_sig = pdf.get_y()
+    pdf.set_font("Arial", 'B', 10)
+    # Sol imza
+    pdf.cell(90, 6, txt=tr("TESLİM EDEN (FİRMA YETKİLİSİ)"), align='C')
+    # Sağ imza
+    pdf.set_x(110)
+    pdf.cell(90, 6, txt=tr("TESLİM ALAN (KİRACI)"), align='C', ln=True)
+    
+    pdf.set_font("Arial", '', 9)
+    # Sol boşluk
+    pdf.cell(90, 20, txt="", border=1) # İmza kutusu
+    # Sağ boşluk
+    pdf.set_x(110)
+    pdf.cell(90, 20, txt="", border=1, ln=True) # İmza kutusu
+    
+    # Altbilgi
+    pdf.set_y(-20)
+    pdf.set_font("Arial", 'I', 8)
+    pdf.cell(0, 10, txt=tr("Bu belge elektronik ortamda oluşturulmuştur. Islak imza gerektirir."), align='C')
+
     response = make_response(pdf.output(dest='S').encode('latin-1'))
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = f'attachment; filename=Sozlesme_{rezervasyon_id}.pdf'
