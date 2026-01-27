@@ -8,22 +8,18 @@ from werkzeug.security import generate_password_hash
 from fpdf import FPDF 
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
+from config import Config
+from extensions import mail
 
 # SQL kodları yerine db_manager'ı çağırıyoruz
 import db_manager as db
 
 app = Flask(__name__)
-app.secret_key = 'gizli_anahtar_burada'
+app.config.from_object(Config)
 
-# --- E-POSTA AYARLARI ---
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'rentacar.proje.destek@gmail.com'  
-app.config['MAIL_PASSWORD'] = 'rxyk ejlq dlnq irvl'   
-app.config['MAIL_DEFAULT_SENDER'] = ('Rent-A-Car Kurumsal', 'rentacar.proje.destek@gmail.com')
-
-mail = Mail(app)
+# Eklentileri başlat
+mail.init_app(app)
+serializer = URLSafeTimedSerializer(app.secret_key)
 serializer = URLSafeTimedSerializer(app.secret_key)
 
 # --- YARDIMCI: MAIL GÖNDERME ---
