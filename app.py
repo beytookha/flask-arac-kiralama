@@ -25,10 +25,12 @@ serializer = URLSafeTimedSerializer(app.secret_key)
 from blueprints.auth import auth_bp
 from blueprints.main import main_bp
 from blueprints.customer import customer_bp
+from blueprints.admin import admin_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
 app.register_blueprint(customer_bp)
+app.register_blueprint(admin_bp)
 
 # --- YARDIMCI: MAIL GÖNDERME ---
 # (Bu fonksiyon artık auth.py içinde, ancak app.py'de de kullanılıyor olabilir. 
@@ -42,10 +44,6 @@ def send_email(to, subject, template):
     except Exception as e:
         print(f"Mail Hatası: {e}")
         return False
-
-# ==========================================
-#               ADMIN ROTALARI (Devam Edecek)
-# ==========================================
 
 if __name__ == '__main__':
     app.run(debug=True)
