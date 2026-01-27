@@ -77,7 +77,7 @@
     {% else %}
     <div class="alert alert-info shadow-sm">
         <i class="fas fa-info-circle me-2"></i>Henüz bir kiralama işleminiz bulunmuyor.
-        <a href="{{ url_for('index') }}" class="fw-bold text-dark">Hemen Kirala!</a>
+        <a href="{{ url_for('main.index') }}" class="fw-bold text-dark">Hemen Kirala!</a>
     </div>
     {% endif %}
 </div>
@@ -89,7 +89,7 @@
                 <h5 class="modal-title text-warning">Hizmetimizi Değerlendirin</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('yorum_yap') }}" method="POST">
+            <form action="{{ url_for('customer.yorum_yap') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3 text-center">
                         <label class="form-label">Puanınız</label>

@@ -354,7 +354,7 @@
                 <h5 class="modal-title fw-bold text-dark">Deneyiminizi Paylaşın</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ url_for('main.yorum_yap') }}" method="POST">
+            <form action="{{ url_for('customer.yorum_yap') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Puanınız</label>
@@ -383,6 +383,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // --- TARİH KISITLAMASI ---
         var today = new Date().toISOString().split('T')[0];
         var baslangicInput = document.getElementById("baslangic");
         var bitisInput = document.getElementById("bitis");
@@ -399,13 +400,73 @@
                 }
             });
         }
+
+        // --- HARİTA AYARLARI ---
+        var map = L.map('map', { zoomControl: false }).setView([39.0, 35.0], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Şehir ID'sine göre koordinatlar (seed.py sırasına göre sabit)
+        // 1:İstanbul, 2:Ankara, 3:İzmir ... 
+        var cityCoords = {
+            1: [41.0082, 28.9784],  // İstanbul
+            2: [39.9334, 32.8597],  // Ankara
+            3: [38.4192, 27.1287],  // İzmir
+            4: [37.8746, 32.4931],  // Konya
+            5: [36.8969, 30.7133],  // Antalya
+            6: [40.1885, 29.0610],  // Bursa
+            7: [37.0000, 35.3213],  // Adana
+            8: [37.0662, 37.3833],  // Gaziantep
+            9: [38.7312, 35.4787],  // Kayseri
+            10: [39.7667, 30.5256], // Eskişehir
+            11: [36.8121, 34.6415], // Mersin
+            12: [41.2867, 36.33],   // Samsun
+            13: [41.0027, 39.7168], // Trabzon
+            14: [37.7765, 29.0864], // Denizli
+            15: [37.9144, 40.2306], // Diyarbakır
+            16: [37.1591, 38.7969], // Şanlıurfa
+            17: [38.3552, 38.3095], // Malatya
+            18: [37.8560, 27.8416], // Aydın
+            19: [37.2153, 28.3636], // Muğla
+            20: [40.9833, 27.5167]  // Tekirdağ
+        };
+
+        var currentMarker = null;
+
+        // Global fonksiyon olarak ata (select onchange için)
+        window.haritayiGuncelle = function (id) {
+            // String id gelebilir, integer'a çevirmeden de obje keyi olarak çalışır ama güvenelim
+            if (id && cityCoords[id]) {
+                var latLng = cityCoords[id];
+                map.flyTo(latLng, 10, { duration: 1.5 });
+
+                if (currentMarker) map.removeLayer(currentMarker);
+
+                currentMarker = L.marker(latLng).addTo(map)
+                    .bindPopup("<div style='text-align:center;'><b>Teslimat Noktası</b><br>Şubemiz Burada!</div>")
+                    .openPopup();
+            } else {
+                // Seçim yoksa veya geçersizse Türkiye geneline dön
+                map.flyTo([39.0, 35.0], 6, { duration: 1.5 });
+                if (currentMarker) map.removeLayer(currentMarker);
+            }
+        };
+
+        // Sayfa ilk yüklendiğinde seçili şehir varsa haritayı oraya götür
+        var initSehirId = "{{ secilen_sehir_id }}";
+        if (initSehirId && initSehirId !== "None" && initSehirId !== "") {
+            haritayiGuncelle(initSehirId);
+        }
     });
 
+    // Favori Fonksiyonu
     async function toggleFavori(aracId, btn) {
         try {
             const response = await fetch(`/toggle-favori/${aracId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
             if (response.status === 401) {
-                window.location.href = "/login";
+                window.location.href = "/auth/login"; // Login url düzeltildi
                 return;
             }
             const data = await response.json();
@@ -413,60 +474,21 @@
                 const i = btn.querySelector('i');
                 if (data.action === 'added') {
                     i.classList.remove('far', 'text-white'); i.classList.add('fas', 'text-warning');
-                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, timerProgressBar: true });
-                    Toast.fire({ icon: 'success', title: 'Favorilere eklendi' });
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true, position: 'top-end',
+                            icon: 'success', title: 'Favorilere eklendi',
+                            showConfirmButton: false, timer: 1500, timerProgressBar: true
+                        });
+                    }
                 } else {
                     i.classList.remove('fas', 'text-warning'); i.classList.add('far', 'text-white');
                 }
             }
-        });
-    }
-
-    // --- [GÜNCELLENDİ] HARİTA VE 20 ŞEHİR KOORDİNATI ---
-    var map = L.map('map', { zoomControl: false }).setView([39.0, 35.0], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-
-    // seed.py'deki 20 şehrin koordinatları (ID'ye göre)
-    var sehirKoordinatlari = {
-        1: [41.0082, 28.9784], // İstanbul
-        2: [39.9334, 32.8597], // Ankara
-        3: [38.4192, 27.1287], // İzmir
-        4: [37.8746, 32.4931], // Konya
-        5: [36.8969, 30.7133], // Antalya
-        6: [40.1885, 29.0610], // Bursa
-        7: [37.0000, 35.3213], // Adana
-        8: [37.0662, 37.3833], // Gaziantep
-        9: [38.7312, 35.4787], // Kayseri
-        10: [39.7667, 30.5256], // Eskişehir
-        11: [36.8121, 34.6415], // Mersin
-        12: [41.2867, 36.33],   // Samsun
-        13: [41.0027, 39.7168], // Trabzon
-        14: [37.7765, 29.0864], // Denizli
-        15: [37.9144, 40.2306], // Diyarbakır
-        16: [37.1591, 38.7969], // Şanlıurfa
-        17: [38.3552, 38.3095], // Malatya
-        18: [37.8560, 27.8416], // Aydın
-        19: [37.2153, 28.3636], // Muğla
-        20: [40.9833, 27.5167]  // Tekirdağ
-    };
-
-    var currentMarker = null;
-
-    function haritayiGuncelle(id) {
-        if (id && sehirKoordinatlari[id]) {
-            var c = sehirKoordinatlari[id];
-            map.flyTo(c, 11, { duration: 2 });
-            if (currentMarker) map.removeLayer(currentMarker);
-            currentMarker = L.marker(c).addTo(map).bindPopup("<b>Teslimat Noktası</b><br>Şubemiz burada hizmetinizde.").openPopup();
-        } else {
-            map.setView([39.0, 35.0], 6);
-            if (currentMarker) map.removeLayer(currentMarker);
+        } catch (error) {
+            console.error('Favori hatası:', error);
         }
     }
-
-    // Sayfa yüklendiğinde seçili şehir varsa oraya git
-    var secilenID = "{{ secilen_sehir_id }}";
-    if (secilenID) haritayiGuncelle(secilenID);
 </script>
 
 {% endblock %}

@@ -16,7 +16,7 @@
 
                 <div class="card-body p-5">
 
-                    <form action="{{ url_for('register') }}" method="POST">
+                    <form action="{{ url_for('auth.register') }}" method="POST">
 
                         <div class="row mb-3">
                             <div class="col-md-6">
@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="card-footer bg-light text-center py-3 border-0">
-                    <small class="text-muted">Zaten hesabınız var mı? <a href="{{ url_for('login') }}"
+                    <small class="text-muted">Zaten hesabınız var mı? <a href="{{ url_for('auth.login') }}"
                             class="text-dark fw-bold text-decoration-none">Giriş Yap</a></small>
                 </div>
             </div>

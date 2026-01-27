@@ -228,7 +228,7 @@
     <div class="container-box" id="container">
 
         <div class="form-container sign-up-container">
-            <form action="{{ url_for('login') }}" method="POST">
+            <form action="{{ url_for('auth.login') }}" method="POST">
                 <input type="hidden" name="login_type" value="personel">
 
                 <h1 class="text-warning"><i class="fas fa-user-shield"></i> Personel</h1>
@@ -242,7 +242,7 @@
         </div>
 
         <div class="form-container sign-in-container">
-            <form action="{{ url_for('login') }}" method="POST">
+            <form action="{{ url_for('auth.login') }}" method="POST">
                 <input type="hidden" name="login_type" value="musteri">
 
                 <h1><i class="fas fa-user"></i> Müşteri</h1>

@@ -4,7 +4,7 @@ import db_manager as db
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 def admin_required_api():
-    if not session.get('logged_in') or session.get('rol') != 'admin':
+    if 'user_id' not in session or session.get('role') != 'admin':
         return jsonify({'error': 'Unauthorized'}), 401
     return None
 

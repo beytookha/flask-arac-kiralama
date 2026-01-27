@@ -4,11 +4,16 @@ import random
 from datetime import date, datetime, timedelta
 import sys
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # === VERİTABANI AYARLARI ===
 DB_CONFIG = {
-    'user': 'root',
-    'password': '1234',  # Şifreni buraya yaz
-    'host': 'localhost',
+    'user': os.environ.get('DB_USER', 'root'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'host': os.environ.get('DB_HOST', 'localhost'),
     'raise_on_warnings': True
 }
 DB_NAME = 'arac_kiralama'
@@ -246,7 +251,34 @@ def seed_data(cursor, conn):
                        (aid, neden, maliyet, tarih))
         cursor.execute("UPDATE Arac SET durum='Bakımda' WHERE arac_id=%s", (aid,))
 
-    # 6. REZERVASYONLAR
+    # 6. GEÇMİŞ KİRALAMALAR (Araç Geçmişi Oluştur)
+    print("⏳ Araç geçmişi oluşturuluyor...")
+    for aid in arac_ids:
+        # Her aracın %80 ihtimalle geçmişte 1-3 kiralaması olsun
+        if random.random() < 0.8:
+            for _ in range(random.randint(1, 3)):
+                mid = random.choice(musteri_ids)
+                gun = random.randint(1, 7)
+                # Geçmiş tarih: Bugünün 2 ay öncesinden 1 yıl öncesine kadar
+                gecmis_baslangic = date.today() - timedelta(days=random.randint(60, 365))
+                gecmis_bitis = gecmis_baslangic + timedelta(days=gun)
+                
+                cursor.execute("SELECT gunluk_ucret FROM Arac WHERE arac_id=%s", (aid,))
+                row = cursor.fetchone()
+                if not row: continue
+                ucret = row['gunluk_ucret']
+                toplam = float(ucret) * gun
+                
+                cursor.execute("""INSERT INTO Rezervasyon (musteri_id, arac_id, baslangic_tarihi, bitis_tarihi, alis_saati, teslim_saati, toplam_ucret, durum) 
+                                  VALUES (%s,%s,%s,%s,%s,%s,%s,'Tamamlandı')""", 
+                               (mid, aid, gecmis_baslangic, gecmis_bitis, "10:00", "12:00", toplam))
+                rez_id = cursor.lastrowid
+                
+                # Ödemesini de ekle
+                cursor.execute("INSERT INTO Odeme (rezervasyon_id, odeme_tutari, kart_sahibi, kart_no_son4) VALUES (%s,%s,%s,'5678')",
+                               (rez_id, toplam, "Gecmis Musteri"))
+
+    # 7. GÜNCEL VE GELECEK REZERVASYONLAR
     for i in range(N_REZERVASYON):
         mid = random.choice(musteri_ids)
         aid = random.choice(arac_ids)
@@ -254,17 +286,26 @@ def seed_data(cursor, conn):
         if aid in bakimdaki_araclar: continue 
         
         gun = random.randint(1, 10)
-        if random.random() < 0.7:
+        # Logic for Active Rentals (Kirada)
+        if i < N_REZERVASYON * 0.2: # %20'si Aktif Kirada Olsun
+            baslangic = date.today() - timedelta(days=random.randint(1, 10))
+            bitis = date.today() + timedelta(days=random.randint(1, 10))
+            durum = 'Kirada'
+            # Aracı da 'Kirada' yap
+            cursor.execute("UPDATE Arac SET durum='Kirada' WHERE arac_id=%s", (aid,))
+        elif random.random() < 0.7:
             baslangic = date.today() - timedelta(days=random.randint(10, 300))
             durum = 'Tamamlandı'
+            bitis = baslangic + timedelta(days=gun)
         else:
             baslangic = date.today() + timedelta(days=random.randint(1, 60))
             durum = 'Onaylandı'
-            
-        bitis = baslangic + timedelta(days=gun)
+            bitis = baslangic + timedelta(days=gun)
         
         cursor.execute("SELECT gunluk_ucret FROM Arac WHERE arac_id=%s", (aid,))
-        ucret = cursor.fetchone()['gunluk_ucret']
+        row = cursor.fetchone()
+        if not row: continue
+        ucret = row['gunluk_ucret']
         toplam = float(ucret) * gun
         
         cursor.execute("""INSERT INTO Rezervasyon (musteri_id, arac_id, baslangic_tarihi, bitis_tarihi, alis_saati, teslim_saati, toplam_ucret, durum) 
@@ -272,7 +313,7 @@ def seed_data(cursor, conn):
                        (mid, aid, baslangic, bitis, "09:00", "09:00", toplam, durum))
         rez_id = cursor.lastrowid
         
-        if durum == 'Tamamlandı' or durum == 'Onaylandı':
+        if durum in ['Tamamlandı', 'Onaylandı', 'Kirada']:
             cursor.execute("INSERT INTO Odeme (rezervasyon_id, odeme_tutari, kart_sahibi, kart_no_son4) VALUES (%s,%s,%s,%s)",
                            (rez_id, toplam, "Test User", "1234"))
             

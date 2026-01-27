@@ -35,14 +35,14 @@ def login():
                 flash(f"Hoşgeldin {user['ad']} (Yönetici)", "success")
                 # Admin dashboard blueprint'i henüz yapılmadı, şimdilik app.py'deki rotaya gider
                 # İlerde 'admin.dashboard' olacak
-                return redirect(url_for('admin_dashboard')) 
+                return redirect(url_for('admin.dashboard')) 
             else:
                 session['user_id'] = user['musteri_id']
                 session['user_name'] = f"{user['ad']} {user['soyad']}"
                 session['user_img'] = user.get('ProfilResim', 'default_user.png')
                 session['role'] = 'musteri'
                 flash(f"Hoşgeldin {user['ad']}", "success")
-                return redirect(url_for('index'))
+                return redirect(url_for('main.index'))
         else:
             flash("E-posta veya şifre hatalı!", "danger")
     return render_template('auth/login.html')
