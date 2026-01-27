@@ -2,8 +2,6 @@
 
 Modern, kullanıcı dostu ve kapsamlı bir Araç Kiralama Web Uygulaması. Flask altyapısı ile geliştirilen bu proje, hem müşteriler hem de yöneticiler için gelişmiş özellikler sunar.
 
-![Project Banner](static/img/banner_placeholder.jpg) 
-*(Varsa proje ekran görüntüsü buraya eklenebilir)*
 
 ## 🌟 Özellikler
 
@@ -84,12 +82,11 @@ FlaskProjem/
 
 ## 🔑 Varsayılan Hesaplar (Seed Çalıştırıldıysa)
 
-- **Admin Hesabı:** `admin@rentacar.com` / `123456`
-- **Müşteri Hesabı:** `ahmet@mail.com` / `123456`
+- **Admin Hesabı:** `admin@rentacar.com` / `1234`
 
 ## 📄 Lisans
 
 Bu proje eğitim ve portföy amaçlı geliştirilmiştir. Kaynak göstererek kullanabilirsiniz.
 
 ---
-*Geliştirici: [Adınız/Github Profiliniz]*
+*Geliştirici: [Beytullah/beytookha]*
