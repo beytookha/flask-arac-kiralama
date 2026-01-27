@@ -4,13 +4,13 @@
 
 {% block body %}
 <div class="container-fluid mt-4 mb-5">
-    
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0"><i class="fas fa-file-contract me-2"></i>Sigorta Yönetimi</h2>
             <p class="text-muted mb-0">Filodaki tüm araçların sigorta poliçe detayları.</p>
         </div>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-dark">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-dark">
             <i class="fas fa-arrow-left me-2"></i>Panele Dön
         </a>
     </div>
@@ -32,60 +32,59 @@
                     </thead>
                     <tbody>
                         {% if sigortalar %}
-                            {% for sigorta in sigortalar %}
-                            
-                            {% set row_class = '' %}
-                            {% if sigorta.kalan_gun < 0 %}
-                                {% set row_class = 'table-danger' %} {% elif sigorta.kalan_gun <= 30 %}
-                                {% set row_class = 'table-warning' %} {% endif %}
+                        {% for sigorta in sigortalar %}
 
-                            <tr class="{{ row_class }}">
-                                <td>
-                                    {% if sigorta.kalan_gun < 0 %}
-                                        <span class="badge bg-danger">SÜRESİ DOLDU</span>
-                                    {% elif sigorta.kalan_gun <= 30 %}
-                                        <span class="badge bg-warning text-dark">YENİLE</span>
-                                    {% else %}
+                        {% set row_class = '' %}
+                        {% if sigorta.kalan_gun < 0 %} {% set row_class='table-danger' %} {% elif sigorta.kalan_gun <=30
+                            %} {% set row_class='table-warning' %} {% endif %} <tr class="{{ row_class }}">
+                            <td>
+                                {% if sigorta.kalan_gun < 0 %} <span class="badge bg-danger">SÜRESİ DOLDU</span>
+                                    {% elif sigorta.kalan_gun <= 30 %} <span class="badge bg-warning text-dark">
+                                        YENİLE</span>
+                                        {% else %}
                                         <span class="badge bg-success">AKTİF</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if sigorta.marka %}
-                                        <div class="fw-bold">{{ sigorta.marka }} {{ sigorta.model }}</div>
+                                        {% endif %}
+                            </td>
+                            <td>
+                                {% if sigorta.marka %}
+                                <div class="fw-bold">{{ sigorta.marka }} {{ sigorta.model }}</div>
+                                {% else %}
+                                <span class="text-muted fst-italic">Araçsız Poliçe</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sigorta.plaka %}
+                                <span class="badge bg-secondary">{{ sigorta.plaka }}</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-primary">{{ sigorta.sigorta_sirketi }}</td>
+                            <td><small class="text-muted fw-bold">{{ sigorta.police_no }}</small></td>
+                            <td>
+                                <div class="small">{{ sigorta.baslangic_tarihi }}</div>
+                                <div class="small fw-bold">{{ sigorta.bitis_tarihi }}</div>
+                            </td>
+                            <td class="text-center">
+                                {% if sigorta.kalan_gun < 0 %} <strong class="text-danger">{{ sigorta.kalan_gun * -1 }}
+                                    gün geçti</strong>
                                     {% else %}
-                                        <span class="text-muted fst-italic">Araçsız Poliçe</span>
+                                    <strong>{{ sigorta.kalan_gun }} gün</strong>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    {% if sigorta.plaka %}
-                                        <span class="badge bg-secondary">{{ sigorta.plaka }}</span>
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="fw-bold text-primary">{{ sigorta.sigorta_sirketi }}</td>
-                                <td><small class="text-muted fw-bold">{{ sigorta.police_no }}</small></td>
-                                <td>
-                                    <div class="small">{{ sigorta.baslangic_tarihi }}</div>
-                                    <div class="small fw-bold">{{ sigorta.bitis_tarihi }}</div>
-                                </td>
-                                <td class="text-center">
-                                    {% if sigorta.kalan_gun < 0 %}
-                                        <strong class="text-danger">{{ sigorta.kalan_gun * -1 }} gün geçti</strong>
-                                    {% else %}
-                                        <strong>{{ sigorta.kalan_gun }} gün</strong>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{{ url_for('admin_sigorta_guncelle', sigorta_id=sigorta.sigorta_id) }}" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i> Güncelle
-                                    </a>
-                                </td>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.sigorta_guncelle', sigorta_id=sigorta.sigorta_id) }}"
+                                    class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Güncelle
+                                </a>
+                            </td>
                             </tr>
                             {% endfor %}
-                        {% else %}
-                            <tr><td colspan="7" class="text-center py-4">Kayıtlı sigorta bilgisi bulunamadı.</td></tr>
-                        {% endif %}
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">Kayıtlı sigorta bilgisi bulunamadı.</td>
+                            </tr>
+                            {% endif %}
                     </tbody>
                 </table>
             </div>

@@ -12,15 +12,18 @@
                     <form method="POST">
                         <div class="mb-3">
                             <label class="form-label text-white fw-bold">Kupon Kodu</label>
-                            <input type="text" name="kod" class="form-control bg-dark text-white border-secondary" placeholder="Örn: YAZ2025" required>
+                            <input type="text" name="kod" class="form-control bg-dark text-white border-secondary"
+                                placeholder="Örn: YAZ2025" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-white fw-bold">İndirim Oranı (%)</label>
-                            <input type="number" name="oran" class="form-control bg-dark text-white border-secondary" placeholder="10" min="1" max="100" required>
+                            <input type="number" name="oran" class="form-control bg-dark text-white border-secondary"
+                                placeholder="10" min="1" max="100" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-white fw-bold">Son Kullanma Tarihi</label>
-                            <input type="date" name="tarih" class="form-control bg-dark text-white border-secondary" required>
+                            <input type="date" name="tarih" class="form-control bg-dark text-white border-secondary"
+                                required>
                         </div>
                         <button type="submit" class="btn btn-warning w-100 fw-bold">OLUŞTUR</button>
                     </form>
@@ -52,19 +55,23 @@
                                 <td>{{ k.son_kullanma_tarihi }}</td>
                                 <td>
                                     {% if k.kalan_gun >= 0 %}
-                                        <span class="badge bg-success">Aktif ({{ k.kalan_gun }} gün)</span>
+                                    <span class="badge bg-success">Aktif ({{ k.kalan_gun }} gün)</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Süresi Doldu</span>
+                                    <span class="badge bg-danger">Süresi Doldu</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('admin_kampanya_sil', id=k.kampanya_id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silmek istediğine emin misin?')">
+                                    <a href="{{ url_for('admin.kampanya_sil', id=k.kampanya_id) }}"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Silmek istediğine emin misin?')">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>
                             </tr>
                             {% else %}
-                            <tr><td colspan="5" class="text-center text-muted py-3">Hiç kampanya yok.</td></tr>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">Hiç kampanya yok.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
