@@ -20,9 +20,15 @@ app.config.from_object(Config)
 # Eklentileri başlat
 mail.init_app(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
-serializer = URLSafeTimedSerializer(app.secret_key)
+
+# Blueprint Kayıt
+from blueprints.auth import auth_bp
+app.register_blueprint(auth_bp)
 
 # --- YARDIMCI: MAIL GÖNDERME ---
+# (Bu fonksiyon artık auth.py içinde, ancak app.py'de de kullanılıyor olabilir. 
+# Eğer app.py'de hala mail atan yerler varsa kalmalı veya shared bir yere taşınmalı.
+# Şimdilik burada kalsın ama send_eamil auth.py'de de var. Kod tekrarı oldu ama Refactor sonra yapacağız.)
 def send_email(to, subject, template):
     try:
         msg = Message(subject, recipients=[to], html=template)
@@ -96,49 +102,9 @@ def index():
                            secilen_sehir_id=sehir_id, yorumlar=yorumlar, 
                            fav_ids=fav_ids)
 
-# --- ŞİFREMİ UNUTTUM ---
-@app.route('/forgot-password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        eposta = request.form['eposta']
-        user = db.check_email_exists(eposta)
-        
-        if user:
-            token = serializer.dumps(eposta, salt='password-reset-salt')
-            link = url_for('reset_password', token=token, _external=True)
-            
-            html_body = f"""
-            <h3>Şifre Sıfırlama İsteği</h3>
-            <p>Merhaba {user['ad']}, şifrenizi sıfırlamak için aşağıdaki linke tıklayın:</p>
-            <a href="{link}" style="background:#ffc107; padding:10px 20px; color:#000; text-decoration:none; font-weight:bold;">Şifremi Sıfırla</a>
-            """
-            
-            if send_email(eposta, "Şifre Sıfırlama", html_body):
-                flash("Sıfırlama linki e-posta adresinize gönderildi.", "info")
-            else:
-                flash("E-posta gönderilemedi (SMTP Ayarlarını kontrol edin).", "warning")
-        else:
-            flash("Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.", "warning")
-            
-    return render_template('forgot_password.html')
-
-@app.route('/reset-password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    try:
-        eposta = serializer.loads(token, salt='password-reset-salt', max_age=1800)
-    except:
-        flash("Sıfırlama linki geçersiz veya süresi dolmuş.", "danger")
-        return redirect(url_for('forgot_password'))
-    
-    if request.method == 'POST':
-        yeni_sifre = request.form['yeni_sifre']
-        if db.update_password_by_email(eposta, yeni_sifre):
-            flash("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.", "success")
-            return redirect(url_for('login'))
-        else:
-            flash("Hata oluştu.", "danger")
-            
-    return render_template('reset_password.html', token=token)
+# --- ŞİFRE VE GİRİŞ İŞLEMLERİ (Moved to blueprints/auth.py) ---
+# Routes: /forgot-password, /reset-password, /login, /register, /logout, /admin/login 
+# Artık Auth Blueprint tarafından yönetiliyor.
 
 # --- REZERVASYON ÖZETİ ---
 @app.route('/rezervasyon/<int:arac_id>', methods=['GET', 'POST'])
@@ -340,63 +306,7 @@ def check_coupon():
         'mesaj': f"Tebrikler! %{kampanya['indirim_orani']} indirim uygulandı."
     })
 
-# --- GİRİŞ / ÇIKIŞ / KAYIT ---
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        eposta = request.form['eposta']
-        sifre = request.form['sifre']
-        sonuc = db.check_user_login(eposta, sifre)
-        if sonuc:
-            session.clear()
-            user = sonuc['data']
-            if sonuc['type'] == 'admin':
-                session['user_id'] = user['personel_id']
-                session['ad'] = user['ad']
-                session['role'] = 'admin'
-                session['gorev'] = user['gorev']
-                flash(f"Hoşgeldin {user['ad']} (Yönetici)", "success")
-                return redirect(url_for('admin_dashboard'))
-            else:
-                session['user_id'] = user['musteri_id']
-                session['user_name'] = f"{user['ad']} {user['soyad']}"
-                session['user_img'] = user.get('ProfilResim', 'default_user.png')
-                session['role'] = 'musteri'
-                flash(f"Hoşgeldin {user['ad']}", "success")
-                return redirect(url_for('index'))
-        else:
-            flash("E-posta veya şifre hatalı!", "danger")
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        sifre = request.form.get('sifre')
-        if sifre != request.form.get('confirm_sifre'):
-            flash("Şifreler uyuşmuyor!", "danger")
-            return redirect(url_for('register'))
-        bilgiler = {
-            'ad': request.form.get('ad'), 'soyad': request.form.get('soyad'),
-            'eposta': request.form.get('eposta'), 'telefon': request.form.get('telefon'),
-            'dogum': request.form.get('dogum_tarihi'), 'ehliyet': request.form.get('ehliyet_no'),
-            'adres': request.form.get('adres'), 'sifre': sifre
-        }
-        if db.register_musteri(bilgiler):
-            flash("Kayıt başarılı! Giriş yapabilirsiniz.", "success")
-            return redirect(url_for('login'))
-        else:
-            flash("E-posta zaten kayıtlı!", "warning")
-    return render_template('register.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('Çıkış yapıldı.', 'info')
-    return redirect(url_for('login'))
-
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    return login()
+# --- GİRİŞ / ÇIKIŞ / KAYIT (Moved to auth blueprint) ---
 
 # ==========================================
 #               ADMIN ROTALARI
