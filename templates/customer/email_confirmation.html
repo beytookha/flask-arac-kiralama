@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Rezervasyon Onayı</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+    
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    
+                    <tr>
+                        <td align="center" style="background-color: #212529; padding: 30px;">
+                            <h1 style="color: #ffc107; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Rezervasyonunuz Onaylandı!</h1>
+                            <p style="color: #dddddd; margin-top: 10px; font-size: 14px;">Rent-A-Car Ailesini tercih ettiğiniz için teşekkürler.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #333333;">Sayın <strong>{{ musteri.ad }} {{ musteri.soyad }}</strong>,</p>
+                            <p style="font-size: 16px; color: #555555; line-height: 1.5;">
+                                Araç kiralama işleminiz başarıyla tamamlanmıştır. Aracınızı belirtilen tarihte ve saatte ofisimizden teslim alabilirsiniz.
+                            </p>
+
+                            <table width="100%" border="0" cellspacing="0" cellpadding="15" style="background-color: #f8f9fa; border-left: 5px solid #ffc107; margin: 20px 0;">
+                                <tr>
+                                    <td style="color: #333;">
+                                        <h3 style="margin: 0 0 10px 0; color: #212529;">{{ arac.marka }} {{ arac.model }}</h3>
+                                        <p style="margin: 5px 0;"><strong>Plaka:</strong> {{ arac.plaka }}</p>
+                                        <p style="margin: 5px 0;"><strong>Yakıt/Vites:</strong> {{ arac.yakit_turu }} / {{ arac.vites_turu }}</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+                                <tr>
+                                    <td width="50%">
+                                        <p style="font-size: 14px; color: #777; margin-bottom: 5px;">ALIŞ TARİHİ</p>
+                                        <p style="font-size: 16px; font-weight: bold; margin-top: 0;">{{ rez.baslangic_tarihi }} ({{ rez.alis_saati }})</p>
+                                    </td>
+                                    <td width="50%">
+                                        <p style="font-size: 14px; color: #777; margin-bottom: 5px;">İADE TARİHİ</p>
+                                        <p style="font-size: 16px; font-weight: bold; margin-top: 0;">{{ rez.bitis_tarihi }} ({{ rez.teslim_saati }})</p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div style="background-color: #212529; color: #ffc107; padding: 15px; text-align: center; margin-top: 30px; border-radius: 5px; font-size: 18px; font-weight: bold;">
+                                TOPLAM ÖDENEN: {{ rez.toplam_ucret }} TL
+                            </div>
+
+                            {% if rez.ekstralar %}
+                            <div style="margin-top: 20px; font-size: 13px; color: #666;">
+                                <strong>Ekstra Hizmetler:</strong>
+                                {% for ek_id in rez.ekstralar %}
+                                    <span>(Hizmet ID: {{ ek_id }}) </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="background-color: #eeeeee; padding: 20px; font-size: 12px; color: #777;">
+                            <p style="margin: 0;">© 2025 Rent-A-Car Premium. Tüm Hakları Saklıdır.</p>
+                            <p style="margin: 5px 0;">Bu e-posta otomatik olarak oluşturulmuştur, lütfen cevaplamayınız.</p>
+                        </td>
+                    </tr>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

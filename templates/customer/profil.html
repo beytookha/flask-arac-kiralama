@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card bg-dark text-light border-warning shadow-lg h-100">
+                <div class="card-body text-center">
+                    <div class="position-relative d-inline-block mb-3">
+                        <img src="{{ url_for('static', filename='img/profiles/' + (user.ProfilResim if user.ProfilResim else 'default_user.png')) }}"
+                            alt="Profil Resmi" class="rounded-circle border border-3 border-warning"
+                            style="width: 150px; height: 150px; object-fit: cover;">
+
+                        <div class="position-absolute bottom-0 end-0 bg-warning text-dark rounded-circle p-2"
+                            title="Resmi formdan değiştirebilirsiniz">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+
+                    <h4 class="text-warning mb-1">{{ user.ad }} {{ user.soyad }}</h4>
+                    <p class="text-muted mb-4">{{ user.eposta }}</p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('kiralamalarim') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-history me-2"></i>Kiralama Geçmişi
+                        </a>
+                        <button class="btn btn-outline-light" onclick="history.back()">
+                            <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card bg-dark text-light border-secondary shadow-lg">
+                <div class="card-header border-secondary">
+                    <ul class="nav nav-tabs card-header-tabs" id="profilTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active text-warning" id="info-tab" data-bs-toggle="tab"
+                                data-bs-target="#info" type="button" role="tab">
+                                <i class="fas fa-user-edit me-2"></i>Bilgileri Düzenle
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-light" id="pass-tab" data-bs-toggle="tab"
+                                data-bs-target="#pass" type="button" role="tab">
+                                <i class="fas fa-key me-2"></i>Şifre Değiştir
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="tab-content" id="profilTabsContent">
+
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            <form action="{{ url_for('customer.profil') }}" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="action" value="bilgi_guncelle">
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light">Ad</label>
+                                        <input type="text" class="form-control bg-dark text-light border-secondary"
+                                            name="ad" value="{{ user.ad }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light">Soyad</label>
+                                        <input type="text" class="form-control bg-dark text-light border-secondary"
+                                            name="soyad" value="{{ user.soyad }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light">Telefon</label>
+                                        <input type="tel" class="form-control bg-dark text-light border-secondary"
+                                            name="telefon" value="{{ user.telefon }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted">E-Mail (Değiştirilemez)</label>
+                                        <input type="email"
+                                            class="form-control bg-secondary text-light border-secondary"
+                                            value="{{ user.eposta }}" disabled>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-light">Adres</label>
+                                        <textarea class="form-control bg-dark text-light border-secondary" name="adres"
+                                            rows="3"
+                                            placeholder="Adres bilgisi giriniz...">{{ user.adres or '' }}</textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-light">Profil Resmi Yükle</label>
+                                        <input type="file" class="form-control bg-dark text-light border-secondary"
+                                            name="profil_resim" accept="image/*">
+                                        <div class="form-text text-muted">Sadece .jpg, .png formatları.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn btn-warning fw-bold px-4">
+                                        <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade" id="pass" role="tabpanel">
+                            <form action="{{ url_for('customer.profil') }}" method="POST">
+                                <input type="hidden" name="action" value="sifre_degistir">
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label text-light">Mevcut Şifre</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-secondary border-secondary text-light"><i
+                                                    class="fas fa-lock"></i></span>
+                                            <input type="password"
+                                                class="form-control bg-dark text-light border-secondary"
+                                                name="eski_sifre" placeholder="Mevcut şifrenizi giriniz" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light">Yeni Şifre</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-secondary border-secondary text-light"><i
+                                                    class="fas fa-key"></i></span>
+                                            <input type="password"
+                                                class="form-control bg-dark text-light border-secondary"
+                                                name="yeni_sifre" placeholder="Yeni şifreniz" required minlength="6">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-light">Yeni Şifre (Tekrar)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-secondary border-secondary text-light"><i
+                                                    class="fas fa-check-double"></i></span>
+                                            <input type="password"
+                                                class="form-control bg-dark text-light border-secondary"
+                                                name="yeni_sifre_tekrar" placeholder="Şifreyi tekrar giriniz" required
+                                                minlength="6">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn btn-danger fw-bold px-4">
+                                        <i class="fas fa-sync-alt me-2"></i>Şifreyi Güncelle
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab geçişlerinde renk değişimi için basit bir script
+    document.addEventListener("DOMContentLoaded", function () {
+        var triggerTabList = [].slice.call(document.querySelectorAll('#profilTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('click', function (event) {
+                // Aktif olanı sarı, diğerlerini beyaz yap
+                triggerTabList.forEach(btn => {
+                    btn.classList.remove('text-warning');
+                    btn.classList.add('text-light');
+                });
+                event.target.classList.remove('text-light');
+                event.target.classList.add('text-warning');
+            })
+        })
+    });
+</script>
+{% endblock %}
