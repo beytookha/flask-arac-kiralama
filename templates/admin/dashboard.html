@@ -62,7 +62,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <div class="text-white-50 small text-uppercase fw-bold mb-1">Toplam Ciro</div>
-                            <div class="h2 mb-0 fw-bold text-warning">{{ istatistik.ciro }} ₺</div>
+                            <div class="h2 mb-0 fw-bold text-warning"><span id="statCiro">-</span> ₺</div>
                         </div>
                         <div class="icon-circle bg-white bg-opacity-10 p-3 rounded-circle">
                             <i class="fas fa-lira-sign fa-2x text-warning"></i>
@@ -79,7 +79,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <div class="text-white-50 small text-uppercase fw-bold mb-1">Toplam Kiralama</div>
-                            <div class="h2 mb-0 fw-bold text-white">{{ istatistik.aktif }}</div>
+                            <div class="h2 mb-0 fw-bold text-white" id="statAktif">-</div>
                         </div>
                         <div class="icon-circle bg-white bg-opacity-10 p-3 rounded-circle">
                             <i class="fas fa-key fa-2x text-white"></i>
@@ -96,7 +96,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <div class="text-white-50 small text-uppercase fw-bold mb-1">Filodaki Araç</div>
-                            <div class="h2 mb-0 fw-bold text-white">{{ istatistik.arac }}</div>
+                            <div class="h2 mb-0 fw-bold text-white" id="statArac">-</div>
                         </div>
                         <div class="icon-circle bg-white bg-opacity-10 p-3 rounded-circle">
                             <i class="fas fa-car fa-2x text-white"></i>
@@ -113,7 +113,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <div class="text-white-50 small text-uppercase fw-bold mb-1">Müşteri Sayısı</div>
-                            <div class="h2 mb-0 fw-bold text-white">{{ istatistik.musteri }}</div>
+                            <div class="h2 mb-0 fw-bold text-white" id="statMusteri">-</div>
                         </div>
                         <div class="icon-circle bg-white bg-opacity-10 p-3 rounded-circle">
                             <i class="fas fa-users fa-2x text-white"></i>
@@ -331,50 +331,62 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Python'dan gelen veriler
-    const markaLabels = {{ marka_isimleri | default ([]) | tojson }};
-    const markaData = {{ marka_sayilari | default ([]) | tojson }};
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("Fetching dashboard stats...");
+        fetch('/api/stats/dashboard')
+            .then(response => response.json())
+            .then(data => {
+                const markaLabels = data.marka_isimleri || [];
+                const markaData = data.marka_sayilari || [];
+                const ayLabels = data.ay_isimleri || [];
+                const gelirData = data.aylik_kazanclar || [];
 
-    const ayLabels = {{ ay_isimleri | default ([]) | tojson }};
-    const gelirData = {{ aylik_kazanclar | default ([]) | tojson }};
+                // Update Text Stats
+                document.getElementById('statCiro').textContent = (data.ciro || 0).toLocaleString('tr-TR');
+                document.getElementById('statAktif').textContent = data.aktif || 0;
+                document.getElementById('statArac').textContent = data.arac || 0;
+                document.getElementById('statMusteri').textContent = data.musteri || 0;
 
-    if (markaLabels.length > 0) {
-        const ctx1 = document.getElementById('markaChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'doughnut',
-            data: {
-                labels: markaLabels,
-                datasets: [{
-                    data: markaData,
-                    backgroundColor: ['#212529', '#ffc107', '#6c757d', '#198754', '#0d6efd', '#dc3545'],
-                    borderWidth: 0
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-        });
-    }
+                if (markaLabels.length > 0) {
+                    const ctx1 = document.getElementById('markaChart').getContext('2d');
+                    new Chart(ctx1, {
+                        type: 'doughnut',
+                        data: {
+                            labels: markaLabels,
+                            datasets: [{
+                                data: markaData,
+                                backgroundColor: ['#212529', '#ffc107', '#6c757d', '#198754', '#0d6efd', '#dc3545'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                    });
+                }
 
-    if (ayLabels.length > 0) {
-        const ctx2 = document.getElementById('gelirChart').getContext('2d');
-        new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: ayLabels,
-                datasets: [{
-                    label: 'Ciro (TL)',
-                    data: gelirData,
-                    borderColor: '#198754',
-                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#198754',
-                    pointRadius: 5
-                }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
-        });
-    }
+                if (ayLabels.length > 0) {
+                    const ctx2 = document.getElementById('gelirChart').getContext('2d');
+                    new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: ayLabels,
+                            datasets: [{
+                                label: 'Ciro (TL)',
+                                data: gelirData,
+                                borderColor: '#198754',
+                                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointBackgroundColor: '#fff',
+                                pointBorderColor: '#198754',
+                                pointRadius: 5
+                            }]
+                        },
+                        options: { responsive: true, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading charts:', error));
+    });
 </script>
 
 {% endblock %}

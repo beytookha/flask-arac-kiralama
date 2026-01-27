@@ -15,14 +15,10 @@ def allowed_file(filename):
 @admin_bp.route('/dashboard')
 def dashboard():
     if 'user_id' not in session or session.get('role') != 'admin': return redirect(url_for('auth.login'))
-    istatistik = db.get_dashboard_stats()
+    # istatistik = db.get_dashboard_stats()  <-- Moved to API
     rezervasyonlar, musteriler, uyarilar = db.get_dashboard_tables()
-    return render_template('admin/dashboard.html', istatistik=istatistik, rezervasyonlar=rezervasyonlar, 
-                           musteriler=musteriler, uyarilar=uyarilar,
-                           marka_isimleri=istatistik['marka_isimleri'], 
-                           marka_sayilari=istatistik['marka_sayilari'],
-                           ay_isimleri=istatistik['ay_isimleri'], 
-                           aylik_kazanclar=istatistik['aylik_kazanclar'])
+    return render_template('admin/dashboard.html', rezervasyonlar=rezervasyonlar, 
+                           musteriler=musteriler, uyarilar=uyarilar)
 
 # --- DB MASTER ---
 @admin_bp.route('/database', methods=['GET', 'POST'])
@@ -35,14 +31,7 @@ def database():
         columns, rows = db.get_table_data(secilen_tablo)
     return render_template('admin/database.html', tables=tables, secilen_tablo=secilen_tablo, columns=columns, rows=rows)
 
-@admin_bp.route('/run-sql', methods=['POST'])
-def run_sql():
-    if 'user_id' not in session or session.get('role') != 'admin': return jsonify({'status': 'error', 'message': 'Yetkisiz işlem'})
-    try:
-        result = db.run_custom_sql(request.form.get('query'))
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)})
+
 
 @admin_bp.route('/arac-ekle', methods=['GET', 'POST'])
 def arac_ekle():
@@ -124,15 +113,7 @@ def takvim():
     if 'user_id' not in session or session.get('role') != 'admin': return redirect(url_for('auth.login'))
     return render_template('admin/takvim.html')
 
-@admin_bp.route('/api/calendar-events') # This will be /admin/api/calendar-events because of prefix? NO. Wait.
-# If I use blueprint prefix /admin, then this becomes /admin/api/calendar-events.
-# JS might look for /api/calendar-events. I should check takvim.html.
-# Let's keep it under admin prefix for security.
-def api_calendar_events():
-    if 'user_id' not in session or session.get('role') != 'admin': return jsonify([])
-    events = db.get_calendar_events()
-    formatted = [{'title': f"{e['plaka']} - {e['ad']}", 'start': str(e['baslangic_tarihi']), 'end': str(e['bitis_tarihi']), 'color': '#ffc107' if e['durum']=='Onaylandı' else '#198754'} for e in events]
-    return jsonify(formatted)
+
 
 @admin_bp.route('/rapor-indir/<tur>')
 def rapor_indir(tur):

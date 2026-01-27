@@ -27,10 +27,13 @@ from blueprints.main import main_bp
 from blueprints.customer import customer_bp
 from blueprints.admin import admin_bp
 
+from blueprints.api import api_bp
+
 app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
 app.register_blueprint(customer_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(api_bp)
 
 # --- YARDIMCI: MAIL GÖNDERME ---
 # (Bu fonksiyon artık auth.py içinde, ancak app.py'de de kullanılıyor olabilir. 
